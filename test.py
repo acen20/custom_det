@@ -14,6 +14,7 @@ import time
 from custom_sahi import get_sahi_detection_model
 from trainer import register_data
 from tqdm import tqdm
+from detectron2.evaluation import COCOEvaluator
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -117,6 +118,19 @@ def start_inference(predictor, cfg, test_annotations, base_dir,
               
         out_original.save(f"results/{file_name}")
 
+    print("Output images saved to results/")
+    wo_sahi_mae = np.average(wo_sahi_errors)
+    sahi_mae = np.average(sahi_errors)
+
+    print(f"MAE:\t\t {wo_sahi_mae:.2f}")
+    print(f"MAE(SAHI):\t {sahi_mae:.2f}")
+
+def evaluate_model():
+    print("Evaluating...")
+    eval = COCOEvaluator("custom_test", output_dir="./output", allow_cached_coco=True)
+    eval.evaluate()
+
+
 def test_model(train_dir, test_dir):
     base_dir = test_dir
     cfg = get_custom_config()
@@ -142,7 +156,10 @@ def test_model(train_dir, test_dir):
                     test_annotations = test_annotations, 
                     base_dir = base_dir,
                     images = images, 
-                    custom_metadata=custom_metadata)
+                    custom_metadata=custom_metadata,
+                    use_sahi=False)
+    
+    evaluate_model()
 
 if __name__ == "__main__":
     TRAIN_DIR = "../Dataset/SPIKE Dataset/positive"
