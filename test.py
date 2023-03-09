@@ -14,8 +14,10 @@ import time
 from custom_sahi import get_sahi_detection_model
 from trainer import register_data
 from tqdm import tqdm
-from detectron2.evaluation import COCOEvaluator
+from detectron2.evaluation import COCOEvaluator,inference_on_dataset
+from detectron2.data import build_detection_test_loader
 import warnings
+
 warnings.filterwarnings("ignore")
 
 
@@ -125,10 +127,14 @@ def start_inference(predictor, cfg, test_annotations, base_dir,
     print(f"MAE:\t\t {wo_sahi_mae:.2f}")
     print(f"MAE(SAHI):\t {sahi_mae:.2f}")
 
-def evaluate_model():
+def evaluate_model(predictor, cfg):
     print("Evaluating...")
-    eval = COCOEvaluator("custom_test", output_dir="./output", allow_cached_coco=True)
-    eval.evaluate()
+    #Call the COCO Evaluator function and pass the Validation Dataset
+    evaluator = COCOEvaluator("custom_test", cfg, False, output_dir="./output/")
+    val_loader = build_detection_test_loader(cfg, "custom_test")
+
+    #Use the created predicted model in the previous step
+    inference_on_dataset(predictor.model, val_loader, evaluator)
 
 
 def test_model(train_dir, test_dir):
@@ -159,7 +165,8 @@ def test_model(train_dir, test_dir):
                     custom_metadata=custom_metadata,
                     use_sahi=False)
     
-    evaluate_model()
+    evaluate_model(predictor=predictor,
+                   cfg=cfg)
 
 if __name__ == "__main__":
     TRAIN_DIR = "../Dataset/SPIKE Dataset/positive"

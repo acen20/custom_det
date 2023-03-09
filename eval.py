@@ -1,4 +1,3 @@
-
 from detectron2.engine.hooks import EvalHook
 ### Modified EvalHook ###
 
