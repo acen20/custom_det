@@ -3,7 +3,7 @@ import logging
 from detectron2.utils.events import EventStorage
 import json, os
 from model_configs import get_custom_config
-from eval import EvalHook
+from eval import CustomEvalHook
 from early_stopper import early_stopping
 from utils import register_data
 
@@ -52,11 +52,14 @@ class CustomTrainer(DefaultTrainer):
 
 
 
-def register_and_load_trainer(train_data_path, test_data_path): ## ----> returns trainer
+def register_and_load_trainer(train_data_path, test_data_path, data_name): ## ----> returns trainer
 	## LOAD PARAMETERS RELATED TO DATASET	
 	num_images, classes_, _ = register_data(train_data_path, test_data_path)
 	
 	cfg = get_custom_config()
+
+	cfg.OUTPUT_DIR = f"{data_name}/output"
+	cfg.RESULTS_DIR = f"{data_name}/results"
 	
 	for dir_ in [cfg.OUTPUT_DIR, cfg.RESULTS_DIR]:
 		os.makedirs(dir_, exist_ok=True)
@@ -71,7 +74,7 @@ def register_and_load_trainer(train_data_path, test_data_path): ## ----> returns
 	trainer = CustomTrainer(cfg)
 
 	trainer.resume_or_load(resume=False)
-	trainer.register_hooks([EvalHook(EVAL_PERIOD, 
+	trainer.register_hooks([CustomEvalHook(EVAL_PERIOD, 
 									lambda:early_stopping(cfg, trainer, PATIENCE))])
 	
 	print(f"NUM IMAGES PER BATCH: {cfg.SOLVER.IMS_PER_BATCH}")

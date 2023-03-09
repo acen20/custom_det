@@ -1,7 +1,7 @@
 from detectron2.engine.hooks import EvalHook
 ### Modified EvalHook ###
 
-class EvalHook(EvalHook):
+class CustomEvalHook(EvalHook):
 	def __init__(self,eval_period, eval_function):
 		super(EvalHook,self).__init__(eval_period, eval_function)
 		

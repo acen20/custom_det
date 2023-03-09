@@ -120,7 +120,7 @@ def start_inference(predictor, cfg, test_annotations, base_dir,
               
         out_original.save(f"results/{file_name}")
 
-    print("Output images saved to results/")
+    print(f"Output images saved to {cfg.RESULTS_DIR}")
     wo_sahi_mae = np.average(wo_sahi_errors)
     sahi_mae = np.average(sahi_errors)
 
