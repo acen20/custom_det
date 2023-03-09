@@ -61,7 +61,7 @@ def generate_feature_maps(cfg, predictor, base_dir, im_name):
 
 
 def start_inference(predictor, cfg, test_annotations, base_dir, 
-                    images, custom_metadata, use_sahi=False):
+                    images, custom_metadata, use_sahi=True):
     wo_sahi_errors = []
     sahi_errors = []
 

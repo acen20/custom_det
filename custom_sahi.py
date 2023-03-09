@@ -9,6 +9,7 @@ def get_sahi_detection_model(original_cfg, custom_metadata, class_remapping=Fals
                              confidence=None):
     
     sahi_cfg = original_cfg.clone()
+    confidence = sahi_cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST
     
     det_model = Detectron2DetectionModel(
         device= sahi_cfg.MODEL.DEVICE,
@@ -20,6 +21,7 @@ def get_sahi_detection_model(original_cfg, custom_metadata, class_remapping=Fals
     sahi_predictor = DefaultPredictor(sahi_cfg)
 
     det_model.model = sahi_predictor
+    
     keys = {}
     offset = 0
     if class_remapping:
@@ -27,7 +29,10 @@ def get_sahi_detection_model(original_cfg, custom_metadata, class_remapping=Fals
     for i in range(sahi_cfg.MODEL.ROI_HEADS.NUM_CLASSES):
         keys[str(i+offset)] = custom_metadata.thing_classes[i]
     det_model.category_mapping = keys
-    return det_model
+
+
+    sahi_predictor = SAHIPredictor(detection_model=det_model)
+    return sahi_predictor
 
 
 class SAHIPredictor(torch.nn.Module):
@@ -79,7 +84,7 @@ class SAHIPredictor(torch.nn.Module):
             overlap_width_ratio = self.overlap_ratio,
             postprocess_type = self.process_type,
             postprocess_match_metric = "IOS",
-            verbose = 2
+            verbose = 0
         )
         
         result = self.sahi_to_detectron_instances(image, result.object_prediction_list)
