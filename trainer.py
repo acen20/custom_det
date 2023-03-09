@@ -55,18 +55,6 @@ class CustomTrainer(DefaultTrainer):
 def register_and_load_trainer(train_data_path, test_data_path): ## ----> returns trainer
 	## LOAD PARAMETERS RELATED TO DATASET	
 	num_images, classes_, _ = register_data(train_data_path, test_data_path)
-
-	### CLEAR REGISTERS
-	DatasetCatalog.clear()
-	MetadataCatalog.clear()
-
-	## REGISTER THE DATASET
-	register_coco_instances("custom_train",{},
-							f"{train_data_path}/train.json",
-							f"{train_data_path}")
-	register_coco_instances("custom_test",{},
-							f"{test_data_path}/test.json",
-							f"{test_data_path}")
 	
 	cfg = get_custom_config()
 	

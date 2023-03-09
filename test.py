@@ -36,26 +36,26 @@ def generate_feature_maps(cfg, predictor, base_dir, im_name):
     for feat in output.keys():
         output[feat] = output[feat].unsqueeze(4).transpose(1,4).squeeze().detach().cpu()
 
-    plt.figure(figsize=(16,16))
+    plt.figure(figsize=(12,12))
     plt.subplot(3,2,1)
     plt.axis("off")
     _ = plt.imshow(np.moveaxis(image_transformed, 0, -1)[:,:,::-1], cmap="winter_r")
 
     plt.subplot(3,2,2)
     plt.axis("off")
-    _ = plt.imshow(torch.sum(output['res2'], 2), cmap="winter_r")
+    _ = plt.imshow(torch.sum(output['res2'], 2), cmap="plasma_r")
 
     plt.subplot(3,2,3)
     plt.axis("off")
-    _ = plt.imshow(torch.sum(output['res3'], 2), cmap="winter_r")
+    _ = plt.imshow(torch.sum(output['res3'], 2), cmap="plasma_r")
 
     plt.subplot(3,2,4)
     plt.axis("off")
-    _ = plt.imshow(torch.sum(output['res4'], 2), cmap="winter_r")
+    _ = plt.imshow(torch.sum(output['res4'], 2), cmap="plasma_r")
 
     plt.subplot(3,2,5)
     plt.axis("off")
-    _ = plt.imshow(torch.sum(output['res5'], 2), cmap="winter_r")
+    _ = plt.imshow(torch.sum(output['res5'], 2), cmap="plasma_r")
 
     plt.savefig('results/feature_maps.png')
 
