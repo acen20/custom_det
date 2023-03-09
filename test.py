@@ -11,8 +11,11 @@ import json
 from detectron2.utils.visualizer import ColorMode
 from detectron2.utils.visualizer import Visualizer
 import time
-from sahi import get_sahi_detection_model
+from custom_sahi import get_sahi_detection_model
 from trainer import register_data
+from tqdm import tqdm
+import warnings
+warnings.filterwarnings("ignore")
 
 
 
@@ -58,15 +61,15 @@ def generate_feature_maps(cfg, predictor, base_dir, im_name):
 
 
 def start_inference(predictor, cfg, test_annotations, base_dir, 
-                    images, use_sahi=False):
+                    images, custom_metadata, use_sahi=False):
     wo_sahi_errors = []
     sahi_errors = []
 
     if use_sahi:
         ## PREPARE SAHI MODEL
-        sahi_predictor = get_sahi_detection_model(cfg)
+        sahi_predictor = get_sahi_detection_model(cfg, custom_metadata)
 
-    for img in images:
+    for img in tqdm(images, 'Testing'):
         file_name = img
         img = os.path.join(base_dir, img)
         im = cv2.imread(img)
@@ -111,14 +114,15 @@ def start_inference(predictor, cfg, test_annotations, base_dir,
                     scale=1.0,
                     instance_mode=ColorMode.IMAGE_BW
         )
-        
-        
+              
         out_original.save(f"results/{file_name}")
 
-def test_model(base_dir):
+def test_model(train_dir, test_dir):
+    base_dir = test_dir
     cfg = get_custom_config()
     cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
     predictor = DefaultPredictor(cfg)
+    _ , _ , custom_metadata = register_data(train_dir, test_dir)
 
     formats = ["png","jpg"]
 
@@ -133,10 +137,14 @@ def test_model(base_dir):
     with open(f"{base_dir}/test.json") as f:
         test_annotations = json.load(f)
 
-    start_inference(predictor, base_dir, test_annotations)
-
-
+    start_inference(predictor=predictor,
+                    cfg=cfg,
+                    test_annotations = test_annotations, 
+                    base_dir = base_dir,
+                    images = images, 
+                    custom_metadata=custom_metadata)
 
 if __name__ == "__main__":
-    BASE_DIR = "../Dataset/SPIKE Dataset/testImages_SPIKE"
-    test_model(BASE_DIR)
+    TRAIN_DIR = "../Dataset/SPIKE Dataset/positive"
+    TEST_DIR = "../Dataset/SPIKE Dataset/testImages_SPIKE"
+    test_model(TRAIN_DIR, TEST_DIR)

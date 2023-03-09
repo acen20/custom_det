@@ -1,14 +1,21 @@
-def get_sahi_detection_model(original_cfg, class_remapping=False,
-                             confidence=0.7, max_size_test=1600, min_size_test=256):
+from detectron2.engine import DefaultPredictor
+from sahi.models.detectron2 import Detectron2DetectionModel
+from sahi.predict import get_sliced_prediction
+import torch
+from detectron2.structures import Instances, Boxes
+
+
+def get_sahi_detection_model(original_cfg, custom_metadata, class_remapping=False,
+                             confidence=None):
+    
+    sahi_cfg = original_cfg.clone()
     
     det_model = Detectron2DetectionModel(
-        device= 'cuda' if torch.cuda.is_available() else 'cpu',
+        device= sahi_cfg.MODEL.DEVICE,
         mask_threshold=confidence,
         confidence_threshold=confidence,
         load_at_init= False
     )
-
-    sahi_cfg = original_cfg.clone()
 
     sahi_predictor = DefaultPredictor(sahi_cfg)
 
@@ -77,13 +84,3 @@ class SAHIPredictor(torch.nn.Module):
         
         result = self.sahi_to_detectron_instances(image, result.object_prediction_list)
         return result
-
-
-def get_sahi_detections(cfg):
-    sahi_errors = []
-    detection_model = get_sahi_detection_model(
-                    original_cfg = cfg,
-                    class_remapping=False,
-                    confidence = cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST)
-    sahi_predictor = SAHIPredictor(detection_model = detection_model)
-    return
