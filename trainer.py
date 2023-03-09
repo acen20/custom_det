@@ -5,15 +5,15 @@ import json, os
 from model_configs import get_custom_config
 from eval import EvalHook
 from early_stopper import early_stopping
-from detectron2.data.datasets import register_coco_instances
-from detectron2.data import MetadataCatalog, DatasetCatalog
+from utils import register_data
+
 
 ### Modified TrainerHook ###
 
-class DefaultTrainer(DefaultTrainer):
+class CustomTrainer(DefaultTrainer):
 
 	def __init__(self,cfg):
-		super(DefaultTrainer,self).__init__(cfg)
+		super(CustomTrainer,self).__init__(cfg)
 		self.patience_iter = 0
 		
 	def train(self, start_iter: int, max_iter: int):
@@ -48,31 +48,26 @@ class DefaultTrainer(DefaultTrainer):
 		for h in self._hooks:
 			signal = h.after_step()
 		return signal
-	
-def load_dataset_desc(train_data_path):
-	with open(f"{train_data_path}/train.json") as f:
-		ann = json.load(f)
-	classes = ann['categories']
-	classes_ = [class_['name'] for class_ in classes]
-	return len(ann['images']), classes_
+
 
 
 
 def register_and_load_trainer(train_data_path, test_data_path): ## ----> returns trainer
 	## LOAD PARAMETERS RELATED TO DATASET	
-	num_images, classes_ = load_dataset_desc(train_data_path)
+	num_images, classes_, _ = register_data(train_data_path, test_data_path)
 
-	### REGISTER DATASET
+	### CLEAR REGISTERS
 	DatasetCatalog.clear()
 	MetadataCatalog.clear()
+
+	## REGISTER THE DATASET
 	register_coco_instances("custom_train",{},
 							f"{train_data_path}/train.json",
 							f"{train_data_path}")
 	register_coco_instances("custom_test",{},
 							f"{test_data_path}/test.json",
 							f"{test_data_path}")
-
-
+	
 	cfg = get_custom_config()
 	
 	for dir_ in [cfg.OUTPUT_DIR, cfg.RESULTS_DIR]:
@@ -85,7 +80,7 @@ def register_and_load_trainer(train_data_path, test_data_path): ## ----> returns
 	EVAL_PERIOD = num_images // cfg.SOLVER.IMS_PER_BATCH
 	PATIENCE = 3
 
-	trainer = DefaultTrainer(cfg)
+	trainer = CustomTrainer(cfg)
 
 	trainer.resume_or_load(resume=False)
 	trainer.register_hooks([EvalHook(EVAL_PERIOD, 
