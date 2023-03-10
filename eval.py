@@ -3,7 +3,7 @@ from detectron2.engine.hooks import EvalHook
 
 class CustomEvalHook(EvalHook):
 	def __init__(self,eval_period, eval_function):
-		super(EvalHook,self).__init__(eval_period, eval_function)
+		super(CustomEvalHook,self).__init__(eval_period, eval_function)
 		
 	def _do_eval(self):
 		result = self._func()

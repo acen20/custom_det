@@ -56,10 +56,7 @@ def register_and_load_trainer(train_data_path, test_data_path, data_name): ## --
 	## LOAD PARAMETERS RELATED TO DATASET	
 	num_images, classes_, _ = register_data(train_data_path, test_data_path)
 	
-	cfg = get_custom_config()
-
-	cfg.OUTPUT_DIR = f"{data_name}/output"
-	cfg.RESULTS_DIR = f"{data_name}/results"
+	cfg = get_custom_config(data_name)
 	
 	for dir_ in [cfg.OUTPUT_DIR, cfg.RESULTS_DIR]:
 		os.makedirs(dir_, exist_ok=True)

@@ -97,7 +97,7 @@ def start_inference(predictor, cfg, test_annotations, base_dir,
             
             ## VISUALIZE AND SAVE
             out_sahi = v.draw_instance_predictions(outputs_sahi["instances"])
-            out_sahi.save(f"results/SAHI_{file_name}")
+            out_sahi.save(f"{cfg.RESULTS_DIR}/SAHI_{file_name}")
 
             ## CALCULATE AND APPEND ERROR TO LIST
             sahi_error = abs(len(outputs_sahi['instances']) - len(actual_annotations))
@@ -118,7 +118,7 @@ def start_inference(predictor, cfg, test_annotations, base_dir,
                     instance_mode=ColorMode.IMAGE_BW
         )
               
-        out_original.save(f"results/{file_name}")
+        out_original.save(f"{cfg.RESULTS_DIR}/{file_name}")
 
     print(f"Output images saved to {cfg.RESULTS_DIR}")
     wo_sahi_mae = np.average(wo_sahi_errors)
@@ -130,7 +130,7 @@ def start_inference(predictor, cfg, test_annotations, base_dir,
 def evaluate_model(predictor, cfg):
     print("Evaluating...")
     #Call the COCO Evaluator function and pass the Validation Dataset
-    evaluator = COCOEvaluator("custom_test", cfg, False, output_dir="./output/")
+    evaluator = COCOEvaluator("custom_test", cfg, False, output_dir=f"./{cfg.OUTPUT_DIR}")
     val_loader = build_detection_test_loader(cfg, "custom_test")
 
     #Use the created predicted model in the previous step
@@ -169,6 +169,6 @@ def test_model(train_dir, test_dir):
                    cfg=cfg)
 
 if __name__ == "__main__":
-    TRAIN_DIR = "../Dataset/SPIKE Dataset/positive"
-    TEST_DIR = "../Dataset/SPIKE Dataset/testImages_SPIKE"
+    TRAIN_DIR = "../Dataset/GlobalWheatDetection/converted/train"
+    TEST_DIR = "../Dataset/GlobalWheatDetection/converted/test"
     test_model(TRAIN_DIR, TEST_DIR)

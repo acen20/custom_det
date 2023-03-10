@@ -1,0 +1,3 @@
+Downloaded Wheat data
+
+Start from generalizing trainer ----->> add output and results dir according to cfg
