@@ -41,7 +41,7 @@ def get_custom_config(data_name):
 
 
     cfg.SOLVER.IMS_PER_BATCH = 3
-    cfg.SOLVER.BASE_LR = 0.05
+    cfg.SOLVER.BASE_LR = 0.01
 
 #    cfg.TEST.DETECTIONS_PER_IMAGE = 1000
 
