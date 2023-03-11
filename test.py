@@ -176,7 +176,7 @@ def test_model(train_dir, test_dir, data_name):
     calculate_mae(num_y_true, num_y_pred)
 
 if __name__ == "__main__":
-    DATA_NAME = "Sample-R50"
-    TRAIN_DIR = "../Dataset/Sample/train"
-    TEST_DIR = "../Dataset/Sample/test"
+    DATA_NAME = "GWD-X101"
+    TRAIN_DIR = "../Dataset/GlobalWheatDetection/converted/train"
+    TEST_DIR = "../Dataset/GlobalWheatDetection/converted/test"
     test_model(TRAIN_DIR, TEST_DIR, DATA_NAME)
