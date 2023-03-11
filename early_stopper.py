@@ -7,7 +7,7 @@ def early_stopping(cfg, trainer, patience):
     cfg.DATASETS.TEST = ("custom_test",)
     evaluator = COCOEvaluator(cfg.DATASETS.TEST[0], output_dir=cfg.OUTPUT_DIR)
     results = trainer.test(cfg, trainer.model, evaluators = [evaluator])
-    new_AP = results['bbox']['AP']
+    new_AP = results['bbox']['AP50']
 
     # If new AP50 is "nan", it means the model has not learned anything, so we just return to training loop
     if np.isnan(new_AP):

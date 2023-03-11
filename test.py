@@ -16,6 +16,7 @@ from trainer import register_data
 from tqdm import tqdm
 from detectron2.evaluation import COCOEvaluator,inference_on_dataset
 from detectron2.data import build_detection_test_loader
+from metrics import calculate_mae
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -42,31 +43,32 @@ def generate_feature_maps(cfg, predictor, base_dir, im_name):
     plt.figure(figsize=(12,12))
     plt.subplot(3,2,1)
     plt.axis("off")
-    _ = plt.imshow(np.moveaxis(image_transformed, 0, -1)[:,:,::-1], cmap="winter_r")
+    _ = plt.imshow(np.moveaxis(image_transformed, 0, -1)[:,:,::-1])
 
     plt.subplot(3,2,2)
     plt.axis("off")
-    _ = plt.imshow(torch.sum(output['res2'], 2), cmap="plasma_r")
+    _ = plt.imshow(torch.sum(output['res2'], 2), cmap="binary_r")
 
     plt.subplot(3,2,3)
     plt.axis("off")
-    _ = plt.imshow(torch.sum(output['res3'], 2), cmap="plasma_r")
+    _ = plt.imshow(torch.sum(output['res3'], 2), cmap="binary_r")
 
     plt.subplot(3,2,4)
     plt.axis("off")
-    _ = plt.imshow(torch.sum(output['res4'], 2), cmap="plasma_r")
+    _ = plt.imshow(torch.sum(output['res4'], 2), cmap="binary_r")
 
     plt.subplot(3,2,5)
     plt.axis("off")
-    _ = plt.imshow(torch.sum(output['res5'], 2), cmap="plasma_r")
+    _ = plt.imshow(torch.sum(output['res5'], 2), cmap="binary_r")
 
-    plt.savefig('results/feature_maps.png')
+    plt.savefig(f'{cfg.RESULTS_DIR}/feature_maps.png')
 
 
 def start_inference(predictor, cfg, test_annotations, base_dir, 
                     images, custom_metadata, use_sahi=True):
     wo_sahi_errors = []
     sahi_errors = []
+    actuals = []
 
     if use_sahi:
         ## PREPARE SAHI MODEL
@@ -81,13 +83,15 @@ def start_inference(predictor, cfg, test_annotations, base_dir,
         ## GET ACTUAL ANNOTATIONS FOR THE IMAGE
         test_im_id = [test_im['id'] for test_im in test_annotations['images'] if test_im['file_name'] == file_name][0]
         actual_annotations = [ann for ann in test_annotations['annotations'] if ann['image_id'] == test_im_id]
+
+        actuals.append(len(actual_annotations))
         
 
         ## CREATE VISUALIZER OBJECT
         v = Visualizer(im[:,:,::-1],
                     metadata=custom_metadata, 
                     scale=1.0, 
-                    instance_mode=ColorMode.IMAGE_BW
+                    instance_mode=ColorMode.SEGMENTATION
         )
 
 
@@ -109,16 +113,15 @@ def start_inference(predictor, cfg, test_annotations, base_dir,
         outputs_original["instances"] = outputs_original["instances"].to('cpu')
         wo_sahi_error = abs(len(outputs_original['instances']) - len(actual_annotations))  
         wo_sahi_errors.append(wo_sahi_error)
+
+        for box in outputs_original["instances"].pred_boxes:
+            v.draw_box(box)
+            #v.draw_text(str(box[:2].numpy()), tuple(box[:2].numpy()))
         
-        out_original = v.draw_instance_predictions(outputs_original["instances"])
-        
-        v = Visualizer(im[:,:,::-1],
-                    metadata=custom_metadata, 
-                    scale=1.0,
-                    instance_mode=ColorMode.IMAGE_BW
-        )
-              
-        out_original.save(f"{cfg.RESULTS_DIR}/{file_name}")
+        #out_original = v.draw_instance_predictions(outputs_original["instances"])
+        #out_original.save(f"{cfg.RESULTS_DIR}/{file_name}")
+        v = v.get_output()
+        v.save(f"{cfg.RESULTS_DIR}/{file_name}")
 
     print(f"Output images saved to {cfg.RESULTS_DIR}")
     wo_sahi_mae = np.average(wo_sahi_errors)
@@ -126,6 +129,8 @@ def start_inference(predictor, cfg, test_annotations, base_dir,
 
     print(f"MAE:\t\t {wo_sahi_mae:.2f}")
     print(f"MAE(SAHI):\t {sahi_mae:.2f}")
+
+    return wo_sahi_errors, actuals
 
 def evaluate_model(predictor, cfg):
     print("Evaluating...")
@@ -137,9 +142,9 @@ def evaluate_model(predictor, cfg):
     inference_on_dataset(predictor.model, val_loader, evaluator)
 
 
-def test_model(train_dir, test_dir):
+def test_model(train_dir, test_dir, data_name):
     base_dir = test_dir
-    cfg = get_custom_config()
+    cfg = get_custom_config(data_name)
     cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
     predictor = DefaultPredictor(cfg)
     _ , _ , custom_metadata = register_data(train_dir, test_dir)
@@ -157,7 +162,7 @@ def test_model(train_dir, test_dir):
     with open(f"{base_dir}/test.json") as f:
         test_annotations = json.load(f)
 
-    start_inference(predictor=predictor,
+    num_y_true, num_y_pred = start_inference(predictor=predictor,
                     cfg=cfg,
                     test_annotations = test_annotations, 
                     base_dir = base_dir,
@@ -167,8 +172,11 @@ def test_model(train_dir, test_dir):
     
     evaluate_model(predictor=predictor,
                    cfg=cfg)
+    
+    calculate_mae(num_y_true, num_y_pred)
 
 if __name__ == "__main__":
-    TRAIN_DIR = "../Dataset/GlobalWheatDetection/converted/train"
-    TEST_DIR = "../Dataset/GlobalWheatDetection/converted/test"
-    test_model(TRAIN_DIR, TEST_DIR)
+    DATA_NAME = "Sample-R50"
+    TRAIN_DIR = "../Dataset/Sample/train"
+    TEST_DIR = "../Dataset/Sample/test"
+    test_model(TRAIN_DIR, TEST_DIR, DATA_NAME)

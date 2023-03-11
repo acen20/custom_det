@@ -26,5 +26,7 @@ def register_data(train_data_path, test_data_path):
 							f"{test_data_path}/test.json",
 							f"{test_data_path}")
 	
-	custom_metadata = MetadataCatalog.get("custom_train").set(thing_classes=classes_)
+	MetadataCatalog.get("custom_train").thing_classes=classes_
+	MetadataCatalog.get("custom_train").thing_colors=[(255,0,0)]
+	custom_metadata = MetadataCatalog.get("custom_train")
 	return num_images, classes_, custom_metadata

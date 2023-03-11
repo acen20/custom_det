@@ -66,7 +66,7 @@ def register_and_load_trainer(train_data_path, test_data_path, data_name): ## --
 
 	## To run evaluation after 1 epoch
 	EVAL_PERIOD = num_images // cfg.SOLVER.IMS_PER_BATCH
-	PATIENCE = 3
+	PATIENCE = 15
 
 	trainer = CustomTrainer(cfg)
 
