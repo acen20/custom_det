@@ -7,6 +7,7 @@ def get_custom_config(data_name):
     cfg = get_cfg()
     #model_to_use = "COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml"
     model_to_use = "COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"
+    #model_to_use = "Misc/cascade_mask_rcnn_R_50_FPN_3x.yaml"
     cfg.merge_from_file(model_zoo.get_config_file(model_to_use))
 
     cfg.MODEL.DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -27,10 +28,10 @@ def get_custom_config(data_name):
 
 #    cfg.MODEL.RPN.POST_NMS_TOPK_TRAIN = 2500
 
-#    cfg.INPUT.MIN_SIZE_TRAIN = 224
-#    cfg.INPUT.MAX_SIZE_TRAIN = 1600
-#    cfg.INPUT.MIN_SIZE_TEST = 224
-#    cfg.INPUT.MAX_SIZE_TEST = 1600
+    cfg.INPUT.MIN_SIZE_TRAIN = (800,1024,1600)
+    cfg.INPUT.MAX_SIZE_TRAIN = 1600
+    cfg.INPUT.MIN_SIZE_TEST = 1600
+    cfg.INPUT.MAX_SIZE_TEST = 1600
 #    cfg.INPUT.CROP.ENABLED = True
 #    cfg.INPUT.CROP.SIZE = [0.9, 0.9]
     cfg.INPUT.MASK_FORMAT = "polygon"
@@ -40,7 +41,7 @@ def get_custom_config(data_name):
     cfg.RESULTS_DIR = f"{data_name}/results"
 
 
-    cfg.SOLVER.IMS_PER_BATCH = 4
+    cfg.SOLVER.IMS_PER_BATCH = 2
     cfg.SOLVER.BASE_LR = 0.01
 
 #    cfg.TEST.DETECTIONS_PER_IMAGE = 1000
