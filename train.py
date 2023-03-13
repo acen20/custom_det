@@ -9,7 +9,7 @@ def train(train_data_path, test_data_path, data_name):
 	
 
 if __name__ == "__main__":
-    DATA_NAME = "GWD-X101"
-    TRAIN_DATA_PATH = "../Dataset/GlobalWheatDetection/converted/train"
-    TEST_DATA_PATH = "../Dataset/GlobalWheatDetection/converted/test"
+    DATA_NAME = "SPIKES-R50"
+    TRAIN_DATA_PATH = "../Dataset/SPIKE Dataset/positive"
+    TEST_DATA_PATH = "../Dataset/SPIKE Dataset/testImages_SPIKE"
     train(TRAIN_DATA_PATH, TEST_DATA_PATH, DATA_NAME)

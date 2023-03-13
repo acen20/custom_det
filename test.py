@@ -69,6 +69,7 @@ def start_inference(predictor, cfg, test_annotations, base_dir,
     wo_sahi_errors = []
     sahi_errors = []
     actuals = []
+    num_preds = []
 
     if use_sahi:
         ## PREPARE SAHI MODEL
@@ -113,15 +114,15 @@ def start_inference(predictor, cfg, test_annotations, base_dir,
         outputs_original["instances"] = outputs_original["instances"].to('cpu')
         wo_sahi_error = abs(len(outputs_original['instances']) - len(actual_annotations))  
         wo_sahi_errors.append(wo_sahi_error)
-
-        for box in outputs_original["instances"].pred_boxes:
-            v.draw_box(box)
+        num_preds.append(len(outputs_original['instances']))
+        #for box in outputs_original["instances"].pred_boxes:
+        #    v.draw_box(box)
             #v.draw_text(str(box[:2].numpy()), tuple(box[:2].numpy()))
         
-        #out_original = v.draw_instance_predictions(outputs_original["instances"])
-        #out_original.save(f"{cfg.RESULTS_DIR}/{file_name}")
-        v = v.get_output()
-        v.save(f"{cfg.RESULTS_DIR}/{file_name}")
+        out_original = v.draw_instance_predictions(outputs_original["instances"])
+        out_original.save(f"{cfg.RESULTS_DIR}/{file_name}")
+        #v = v.get_output()
+      #  v.save(f"{cfg.RESULTS_DIR}/{file_name}")
 
     print(f"Output images saved to {cfg.RESULTS_DIR}")
     wo_sahi_mae = np.average(wo_sahi_errors)
@@ -130,7 +131,7 @@ def start_inference(predictor, cfg, test_annotations, base_dir,
     print(f"MAE:\t\t {wo_sahi_mae:.2f}")
     print(f"MAE(SAHI):\t {sahi_mae:.2f}")
 
-    return wo_sahi_errors, actuals
+    return num_preds, actuals
 
 def evaluate_model(predictor, cfg):
     print("Evaluating...")
@@ -176,7 +177,7 @@ def test_model(train_dir, test_dir, data_name):
     calculate_mae(num_y_true, num_y_pred)
 
 if __name__ == "__main__":
-    DATA_NAME = "GWD-X101"
-    TRAIN_DIR = "../Dataset/GlobalWheatDetection/converted/train"
-    TEST_DIR = "../Dataset/GlobalWheatDetection/converted/test"
+    DATA_NAME = "SPIKES-R50"
+    TRAIN_DIR = "../Dataset/SPIKE Dataset/positive"
+    TEST_DIR = "../Dataset/SPIKE Dataset/testImages_SPIKE"
     test_model(TRAIN_DIR, TEST_DIR, DATA_NAME)

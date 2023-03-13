@@ -66,11 +66,11 @@ def register_and_load_trainer(train_data_path, test_data_path, data_name): ## --
 
 	## To run evaluation after 1 epoch
 	EVAL_PERIOD = num_images // cfg.SOLVER.IMS_PER_BATCH
-	PATIENCE = 15
+	PATIENCE = 5
 
 	trainer = CustomTrainer(cfg)
 
-	trainer.resume_or_load(resume=False)
+	trainer.resume_or_load(resume=True)
 	trainer.register_hooks([CustomEvalHook(EVAL_PERIOD, 
 									lambda:early_stopping(cfg, trainer, PATIENCE))])
 	
